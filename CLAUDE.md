@@ -8,7 +8,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 **Club de Mobilité Pierrefontaine** — A P2P car-sharing platform for the Pierrefontaine residential complex in Mulhouse, targeting a 2026 launch. The core value proposition: eliminate platform commissions (Turo ~30%, Getaround ~35%) and provide cost-transparent pricing based on the real cost-per-km (PRK) of each vehicle.
 
-This repository is currently in **specification + early implementation phase**. The README is the primary architecture blueprint. Two backend files are already implemented (`pricing_engine_v2.py`, `api_v2.py`); everything else is planned.
+This repository is currently in **specification + early implementation phase**. The README is the primary architecture blueprint. 
 
 ---
 
@@ -25,7 +25,7 @@ pip install -r requirements.txt
 alembic upgrade head               # Initialize/migrate database
 python scripts/seed_db.py         # Load demo vehicle JSON files
 
-uvicorn api_v2:app --reload --port 8000
+uvicorn api:app --reload --port 8000
 # Swagger UI: http://localhost:8000/docs
 ```
 
@@ -61,7 +61,7 @@ ruff check backend/
 
 ## Architecture
 
-### Pricing Engine (`backend/pricing_engine_v2.py`) — Core Logic
+### Pricing Engine (`backend/pricing_engine.py`) — Core Logic
 
 The central component. Takes a vehicle JSON + rental request and produces a transparent cost breakdown:
 
@@ -76,7 +76,7 @@ PRICE = PRK × km + time_cost + optional_fuel + cartage_insurance + owner_margin
 
 Public interface:
 ```python
-from pricing_engine_v2 import price_from_dict
+from pricing_engine import price_from_dict
 result = price_from_dict({"vehicle": {...}, "owner": {...}, "request": {...}})
 result.print_receipt()  # formatted console output
 result.to_json()        # full JSON breakdown
@@ -105,7 +105,7 @@ The canonical data model for each vehicle. Key fields:
 
 Seed data JSON files live in `backend/data/vehicles/`.
 
-### REST API (`backend/api_v2.py`)
+### REST API (`backend/api.py`)
 
 Key endpoints:
 - `POST /quote` — main endpoint, runs the pricing engine
@@ -163,9 +163,9 @@ RAILWAY_TOKEN=            # For CI/CD deployment
 
 ## Implementation Status (Roadmap)
 
-**Already implemented:**
-- `backend/pricing_engine_v2.py` — full pricing engine
-- `backend/api_v2.py` — base FastAPI endpoints
+**Sprint :**
+- `backend/pricing_engine.py` — full pricing engine
+- `backend/api.py` — base FastAPI endpoints
 
 **Sprint 1 remaining:**
 - T1: Vehicle JSON schema + ≥3 seed files + validation script

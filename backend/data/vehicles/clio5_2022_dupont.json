@@ -1,0 +1,50 @@
+{
+  "registration": {
+    "plate": "AB-123-CD",
+    "vin": "VF15RBH0A67890123",
+    "ct_expiry": "2026-11-15",
+    "insurance_expiry": "2027-01-31"
+  },
+  "vehicle_info": {
+    "make": "Renault",
+    "model": "Clio 5",
+    "year": 2022,
+    "category": "A",
+    "fuel_type": "essence",
+    "consumption_real": 5.8,
+    "seats": 5,
+    "transmission": "manuelle"
+  },
+  "owner": {
+    "member_id": "MBR-001",
+    "name": "Dupont",
+    "nb_reviews": 7,
+    "rating": 4.6
+  },
+  "current_state": {
+    "odometer_km": 28500,
+    "condition": "bon",
+    "comfort": "standard",
+    "fuel_level_pct": 80,
+    "known_defects": [],
+    "maintenance_history": [
+      {
+        "date": "2025-09-10",
+        "type": "vidange",
+        "km": 25000,
+        "description": "Vidange + filtre huile"
+      }
+    ]
+  },
+  "pricing_params": {
+    "age_years": 4,
+    "annual_km_owner": 12000,
+    "include_fuel_default": false,
+    "min_booking_hours": 4,
+    "max_booking_days": 7
+  },
+  "availability": {
+    "available": true,
+    "unavailable_periods": []
+  }
+}

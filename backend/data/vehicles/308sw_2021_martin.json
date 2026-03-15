@@ -1,0 +1,56 @@
+{
+  "registration": {
+    "plate": "EF-456-GH",
+    "vin": "VF3LCBHXBLS123456",
+    "ct_expiry": "2027-03-22",
+    "insurance_expiry": "2027-04-30"
+  },
+  "vehicle_info": {
+    "make": "Peugeot",
+    "model": "308 SW",
+    "year": 2021,
+    "category": "B",
+    "fuel_type": "diesel",
+    "consumption_real": 4.9,
+    "seats": 5,
+    "transmission": "automatique"
+  },
+  "owner": {
+    "member_id": "MBR-002",
+    "name": "Martin",
+    "nb_reviews": 2,
+    "rating": 4.0
+  },
+  "current_state": {
+    "odometer_km": 52300,
+    "condition": "bon",
+    "comfort": "confort",
+    "fuel_level_pct": 65,
+    "known_defects": ["Légère rayure pare-chocs arrière"],
+    "maintenance_history": [
+      {
+        "date": "2025-06-15",
+        "type": "révision",
+        "km": 50000,
+        "description": "Révision 50 000 km — filtres + freins avant"
+      }
+    ]
+  },
+  "pricing_params": {
+    "age_years": 5,
+    "annual_km_owner": 15000,
+    "include_fuel_default": false,
+    "min_booking_hours": 4,
+    "max_booking_days": 5
+  },
+  "availability": {
+    "available": true,
+    "unavailable_periods": [
+      {
+        "from": "2026-04-01",
+        "to": "2026-04-07",
+        "reason": "Vacances propriétaire"
+      }
+    ]
+  }
+}

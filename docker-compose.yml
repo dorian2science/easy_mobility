@@ -1,0 +1,26 @@
+services:
+  backend:
+    build:
+      context: .
+      dockerfile: backend/Dockerfile
+    ports:
+      - "8000:8000"
+    environment:
+      - DATABASE_URL=sqlite:////app/club_mobilite.db
+      - CLUB_API_KEY=${CLUB_API_KEY:-dev-secret-key-change-in-prod}
+      - ENVIRONMENT=production
+      - CORS_ORIGINS=http://localhost
+    volumes:
+      - db_data:/app/data
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    ports:
+      - "80:80"
+    depends_on:
+      - backend
+
+volumes:
+  db_data:

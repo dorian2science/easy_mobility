@@ -1,0 +1,56 @@
+{
+  "registration": {
+    "plate": "IJ-789-KL",
+    "vin": "VF3MCBHXALS789012",
+    "ct_expiry": "2026-08-10",
+    "insurance_expiry": "2026-12-31"
+  },
+  "vehicle_info": {
+    "make": "Peugeot",
+    "model": "5008",
+    "year": 2020,
+    "category": "D",
+    "fuel_type": "diesel",
+    "consumption_real": 6.2,
+    "seats": 7,
+    "transmission": "automatique"
+  },
+  "owner": {
+    "member_id": "MBR-003",
+    "name": "Bernard",
+    "nb_reviews": 12,
+    "rating": 4.8
+  },
+  "current_state": {
+    "odometer_km": 78400,
+    "condition": "correct",
+    "comfort": "confort",
+    "fuel_level_pct": 45,
+    "known_defects": ["Climatisation arrière en révision"],
+    "maintenance_history": [
+      {
+        "date": "2025-11-20",
+        "type": "vidange",
+        "km": 75000,
+        "description": "Vidange + filtre habitacle + filtre air"
+      },
+      {
+        "date": "2024-05-05",
+        "type": "pneumatiques",
+        "km": 60000,
+        "description": "Remplacement 4 pneus"
+      }
+    ]
+  },
+  "pricing_params": {
+    "age_years": 6,
+    "annual_km_owner": 18000,
+    "include_fuel_default": true,
+    "min_booking_hours": 6,
+    "max_booking_days": 7
+  },
+  "availability": {
+    "available": true,
+    "unavailable_periods": []
+  }
+}
