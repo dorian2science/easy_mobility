@@ -2,22 +2,18 @@ import { useEffect, useState } from "react";
 import { useParams, Link } from "react-router-dom";
 import QuoteForm from "../components/QuoteForm";
 import PriceBreakdown from "../components/PriceBreakdown";
-
-const API_KEY = import.meta.env.VITE_CLUB_API_KEY ?? "dev-secret-key-change-in-prod";
+import { useApi } from "../hooks/useApi";
 
 export default function Quote() {
   const { vehicleId } = useParams();
+  const { apiFetch } = useApi();
   const [vehicle, setVehicle] = useState(null);
   const [quoteData, setQuoteData] = useState(null);
   const [loading, setLoading] = useState(false);
   const [fetchError, setFetchError] = useState(null);
 
   useEffect(() => {
-    fetch(`/api/vehicles/${vehicleId}`, { headers: { "X-Club-Key": API_KEY } })
-      .then((r) => {
-        if (!r.ok) throw new Error(`Véhicule introuvable (${r.status})`);
-        return r.json();
-      })
+    apiFetch(`/vehicles/${vehicleId}`)
       .then(setVehicle)
       .catch((e) => setFetchError(e.message));
   }, [vehicleId]);
@@ -26,13 +22,10 @@ export default function Quote() {
     setLoading(true);
     setQuoteData(null);
     try {
-      const r = await fetch("/api/quote", {
+      const data = await apiFetch("/quote", {
         method: "POST",
-        headers: { "Content-Type": "application/json", "X-Club-Key": API_KEY },
         body: JSON.stringify({ vehicle_id: parseInt(vehicleId), ...params }),
       });
-      if (!r.ok) throw new Error(`Erreur calcul devis (${r.status})`);
-      const data = await r.json();
       setQuoteData(data);
     } catch (e) {
       alert(e.message);
@@ -53,7 +46,7 @@ export default function Quote() {
   return (
     <div className="flex flex-col gap-4">
       <div className="flex items-center gap-2">
-        <Link to="/" className="text-brand-600 text-sm">← Retour</Link>
+        <Link to={`/vehicles/${vehicleId}`} className="text-brand-600 text-sm">← Retour</Link>
         <span className="text-gray-300">|</span>
         <h1 className="text-lg font-bold">
           {vehicle.make} {vehicle.model} ({vehicle.year})

@@ -2,13 +2,15 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
+> **Rule for Claude:** After any implementation session that adds features, changes architecture, or modifies env vars — update this file (Implementation Status, API endpoints, env vars) **before** suggesting a commit. Do not wait to be asked.
+
 ---
 
 ## Project Overview
 
 **Club de Mobilité Pierrefontaine** — A P2P car-sharing platform for the Pierrefontaine residential complex in Mulhouse, targeting a 2026 launch. The core value proposition: eliminate platform commissions (Turo ~30%, Getaround ~35%) and provide cost-transparent pricing based on the real cost-per-km (PRK) of each vehicle.
 
-This repository is currently in **specification + early implementation phase**. The README is the primary architecture blueprint. 
+This repository is in **active development** — sprints 2–5 are implemented. The README is the primary architecture blueprint.
 
 ---
 
@@ -105,30 +107,40 @@ The canonical data model for each vehicle. Key fields:
 
 Seed data JSON files live in `backend/data/vehicles/`.
 
-### REST API (`backend/api.py`)
+### REST API (`backend/api.py` + `backend/routers/`)
 
 Key endpoints:
-- `POST /quote` — main endpoint, runs the pricing engine
-- `GET /vehicles` / `POST /vehicles` — CRUD backed by DB
+- `POST /quote` — runs the pricing engine
+- `GET /vehicles` / `POST /vehicles` / `GET /vehicles/{id}` — CRUD backed by DB; detail includes maintenance_events + reviews
 - `PUT /vehicles/{id}/state` — update km, condition, availability after a rental
 - `GET /reference/categories` / `GET /reference/parameters` — engine parameters
-- Auth: simple API key via `X-Club-Key` header
+- `POST /auth/google` / `POST /auth/register` / `POST /auth/login` — JWT auth
+- `GET /users/me` / `PUT /users/me` / `GET /users/me/stats` — user profile
+- `GET|POST /vehicles/{id}/reviews` — reviews
+- `POST /bookings` / `GET /bookings/me` / `GET /bookings/my-vehicles` — bookings
+- `PUT /bookings/{id}/cancel|activate|complete` — booking state machine
+- `POST /bookings/{id}/extension` / `PUT /bookings/{id}/extension/respond` — extension + WhatsApp
+- Auth: API key (`X-Club-Key`) for seed scripts/CI; JWT Bearer for user endpoints
 
 ### Database (`backend/models/`)
 
-SQLAlchemy 2.x + Alembic migrations. Three tables:
-- `vehicles` — core vehicle data
+SQLAlchemy 2.x + Alembic migrations. Six tables:
+- `users` — members (Google OAuth + email/password, trust flags)
+- `vehicles` — core vehicle data (+ `photo_url`, `owner_id` FK)
 - `maintenance_events` — service history log
-- `quotes` — audit trail of generated quotes (stores full breakdown JSON)
+- `quotes` — audit trail of generated quotes
+- `bookings` — reservations with extension fields
+- `reviews` — vehicle + owner ratings
 
 SQLite in dev (`DATABASE_URL=sqlite:///./club_mobilite.db`), PostgreSQL on Railway in prod.
 
 ### Frontend (`frontend/src/`)
 
-Three main components:
-- `VehicleCard.jsx` — vehicle listing card with owner rating and availability
-- `QuoteForm.jsx` — duration, km, fuel inclusion inputs
-- `PriceBreakdown.jsx` — itemized cost breakdown display
+Pages: `Home`, `VehicleDetail`, `Quote`, `Login`, `Profile`, `AddVehicle`
+
+Components: `VehicleCard`, `QuoteForm`, `PriceBreakdown`, `ReviewCard/List/Form`, `BookingHistoryTable`, `StatsDashboard`, `LoginButton`
+
+Hooks/context: `AuthContext` (JWT in localStorage), `useApi` (auto-injects Bearer token)
 
 Mobile-first (members use smartphones on-site).
 
@@ -136,16 +148,31 @@ Mobile-first (members use smartphones on-site).
 
 ## Environment Variables
 
-Copy `.env.example` to `.env`:
+Copy `.env.example` to `.env` (already in `.gitignore`):
 
 ```bash
 DATABASE_URL=sqlite:///./club_mobilite.db
 CLUB_API_KEY=dev-secret-key-change-in-prod
 ENVIRONMENT=development
 CORS_ORIGINS=http://localhost:5173
-CARTAGE_API_KEY=          # Required for Phase 3 insurance integration
-CARTAGE_API_URL=https://api.cartage.fr/v1
-RAILWAY_TOKEN=            # For CI/CD deployment
+
+# Auth
+JWT_SECRET=<openssl rand -hex 32>
+GOOGLE_CLIENT_ID=          # console.cloud.google.com
+GOOGLE_CLIENT_SECRET=
+VITE_GOOGLE_CLIENT_ID=     # same value — exposed to Vite frontend for the Google button
+
+# WhatsApp (Twilio sandbox)
+TWILIO_ACCOUNT_SID=
+TWILIO_AUTH_TOKEN=
+TWILIO_WHATSAPP_FROM=whatsapp:+14155238886
+
+# Monitoring (optional)
+SENTRY_DSN=
+VITE_SENTRY_DSN=
+
+# CI/CD (GitHub Secret, not needed locally)
+RAILWAY_TOKEN=
 ```
 
 ---
@@ -161,22 +188,42 @@ RAILWAY_TOKEN=            # For CI/CD deployment
 
 ---
 
-## Implementation Status (Roadmap)
+## Implementation Status
 
-**Sprint :**
-- `backend/pricing_engine.py` — full pricing engine
-- `backend/api.py` — base FastAPI endpoints
+**Done — Sprint 0–1:**
+- ✅ Pricing engine (`backend/pricing_engine.py`) + 13 tests
+- ✅ FastAPI base API + 12 API tests
+- ✅ SQLAlchemy models + Alembic migration 0001
+- ✅ 3 seed vehicles (A, B, D) + seed script
+- ✅ React frontend: Home + Quote + 3 components
+- ✅ Docker + docker-compose + GitHub Actions CI + Railway deploy
 
-**Sprint 1 remaining:**
-- T1: Vehicle JSON schema + ≥3 seed files + validation script
-- T2: `vehicle_from_json()` loader + ≥10 pricing tests
-- T3: `/vehicles` CRUD connected to DB
-- T5: SQLAlchemy models + Alembic migration + seed script
-- T4: React frontend (VehicleCard, QuoteForm, PriceBreakdown)
+**Done — Sprints 2–5 (2026-03-15):**
+- ✅ DB: `users`, `reviews`, `bookings` tables — Alembic migration 0002
+- ✅ Auth: Google OAuth + email/password — JWT HS256 7 days
+- ✅ 5 new seed vehicles (all categories A–E) + `scripts/seed_reviews.py`
+- ✅ Reviews system (backend + frontend components)
+- ✅ Vehicle detail page with photo, maintenance timeline, reviews
+- ✅ Booking CRUD + state machine (pending → active → completed)
+- ✅ Booking extension + WhatsApp notifications (Twilio)
+- ✅ User profile dashboard with stats + booking history tabs
+- ✅ Add vehicle form (auth-guarded)
+- ✅ Sentry (backend + frontend, opt-in via env var)
+- ✅ Prometheus + Loki + Grafana monitoring stack (`--profile monitoring`)
 
-**Sprint 2:**
-- T6: Full test suite + `.github/workflows/ci.yml`
-- T7: Railway deployment + Dockerfile + `railway.json`
+**Done — Bug fixes (2026-03-15):**
+- ✅ bcrypt 72-byte limit: password length validated before hashing + maxLength=72 on frontend
+- ✅ Google OAuth button added to Login/Register page (`VITE_GOOGLE_CLIENT_ID` env var required)
+- ✅ `nb_reviews` + `rating` now computed live from DB reviews (was stale JSON value)
+- ✅ Plate conflict fixed: 308sw → PQ-789-RS, 5008 → TU-012-VW (were EF-456-GH / IJ-789-KL, clashing with new Yaris/Golf)
+- ✅ All 8 vehicles have verified Wikimedia Commons CC-licensed car photos
+- ✅ Docker: backend `restart: unless-stopped`, volume `/app/data` → `/app`, Promtail added
+
+**Next:**
+- Cartage API integration (Phase 3 insurance)
+- E2E tests (Playwright)
+- Payment flow (Stripe / Lydia)
+- PWA / offline support
 
 ---
 

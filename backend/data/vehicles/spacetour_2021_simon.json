@@ -1,0 +1,57 @@
+{
+  "registration": {
+    "plate": "QR-345-ST",
+    "vin": "VF7EAHMNBJ1234567",
+    "ct_expiry": "2026-12-08",
+    "insurance_expiry": "2027-03-31"
+  },
+  "vehicle_info": {
+    "make": "Citroën",
+    "model": "SpaceTourer",
+    "year": 2021,
+    "category": "D",
+    "fuel_type": "diesel",
+    "consumption_real": 7.5,
+    "seats": 7,
+    "transmission": "automatique"
+  },
+  "owner": {
+    "member_id": "MBR-007",
+    "name": "Simon",
+    "nb_reviews": 6,
+    "rating": 4.7
+  },
+  "current_state": {
+    "odometer_km": 58900,
+    "condition": "bon",
+    "comfort": "premium",
+    "fuel_level_pct": 90,
+    "known_defects": [],
+    "maintenance_history": [
+      {
+        "date": "2025-11-02",
+        "type": "vidange",
+        "km": 55000,
+        "description": "Vidange complète + filtre habitacle"
+      },
+      {
+        "date": "2025-02-15",
+        "type": "pneus",
+        "km": 48000,
+        "description": "Montage pneus hiver"
+      }
+    ]
+  },
+  "pricing_params": {
+    "age_years": 4,
+    "annual_km_owner": 14000,
+    "include_fuel_default": true,
+    "min_booking_hours": 8,
+    "max_booking_days": 7
+  },
+  "availability": {
+    "available": true,
+    "unavailable_periods": []
+  },
+  "photo_url": "https://upload.wikimedia.org/wikipedia/commons/d/d4/2016_Citroen_Dispatch_1000_BlueHDi_X_S_1.6_Front.jpg"
+}

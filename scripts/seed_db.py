@@ -1,10 +1,14 @@
 #!/usr/bin/env python3
-"""Seed the database from all vehicle JSON files in backend/data/vehicles/."""
+"""Seed the database from all vehicle JSON files in backend/data/vehicles/.
+
+Also creates synthetic User rows for each owner (member_id → user) and
+back-fills Vehicle.owner_id so the auth/booking system can work.
+"""
 
 import json
 import os
 import sys
-from datetime import date
+from datetime import date, datetime
 from pathlib import Path
 
 # Ensure project root is on path
@@ -12,8 +16,39 @@ sys.path.insert(0, str(Path(__file__).parent.parent))
 
 from backend.database import SessionLocal, engine
 from backend.database import Base
-from backend.models import MaintenanceEvent, Vehicle
+from backend.models import MaintenanceEvent, User, Vehicle
 from backend.pricing_engine import vehicle_from_json
+
+
+# Synthetic email/phone mapping for seed owners (keyed by member_id)
+OWNER_EXTRAS = {
+    "MBR-001": {"email": "dupont@club-mobilite.test", "phone": "+33767944910"},
+    "MBR-002": {"email": "martin@club-mobilite.test", "phone": None},
+    "MBR-003": {"email": "bernard@club-mobilite.test", "phone": None},
+    "MBR-004": {"email": "lefevre@club-mobilite.test", "phone": None},
+    "MBR-005": {"email": "rousseau@club-mobilite.test", "phone": None},
+    "MBR-006": {"email": "petit@club-mobilite.test", "phone": None},
+    "MBR-007": {"email": "simon@club-mobilite.test", "phone": "+447934021694"},
+    "MBR-008": {"email": "lambert@club-mobilite.test", "phone": None},
+}
+
+
+def _get_or_create_user(db, member_id: str, owner_name: str) -> User:
+    extras = OWNER_EXTRAS.get(member_id, {})
+    email = extras.get("email") or f"{member_id.lower()}@club-mobilite.test"
+    user = db.query(User).filter(User.email == email).first()
+    if user:
+        return user
+    user = User(
+        email=email,
+        name=owner_name,
+        phone=extras.get("phone"),
+        notif_whatsapp=bool(extras.get("phone")),
+        created_at=datetime.utcnow(),
+    )
+    db.add(user)
+    db.flush()
+    return user
 
 
 def seed():
@@ -28,6 +63,12 @@ def seed():
         plate = raw["registration"]["plate"]
         existing = db.query(Vehicle).filter(Vehicle.plate == plate).first()
         if existing:
+            # Back-fill owner_id if missing
+            if existing.owner_id is None:
+                o = raw["owner"]
+                user = _get_or_create_user(db, o["member_id"], o["name"])
+                existing.owner_id = user.id
+                db.flush()
             print(f"  skip {plate} (already in DB)")
             continue
 
@@ -36,6 +77,10 @@ def seed():
         o = raw["owner"]
         s = raw["current_state"]
         p = raw["pricing_params"]
+
+        user = _get_or_create_user(db, o["member_id"], o["name"])
+
+        photo_url = raw.get("photo_url")
 
         v = Vehicle(
             plate=reg["plate"],
@@ -65,6 +110,8 @@ def seed():
             min_booking_hours=p.get("min_booking_hours", 4.0),
             max_booking_days=p.get("max_booking_days", 7.0),
             available=raw["availability"]["available"],
+            photo_url=photo_url,
+            owner_id=user.id,
         )
         db.add(v)
         db.flush()  # get v.id
@@ -78,7 +125,7 @@ def seed():
                 description=mh.get("description", ""),
             ))
 
-        print(f"  inserted {plate} ({vi['make']} {vi['model']})")
+        print(f"  inserted {plate} ({vi['make']} {vi['model']}) — owner: {user.email}")
 
     db.commit()
     db.close()

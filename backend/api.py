@@ -4,20 +4,54 @@ import json
 import os
 from datetime import datetime
 from fastapi import Depends, FastAPI, Header, HTTPException, status
+from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from sqlalchemy.orm import Session
 
 from backend.database import get_db
 from backend.models import Quote, Vehicle
 from backend.pricing_engine import CATEGORY_PARAMS, price_from_dict
+from backend.routers import auth as auth_router
+from backend.routers import bookings as bookings_router
+from backend.routers import reviews as reviews_router
+from backend.routers import users as users_router
 
 CLUB_API_KEY = os.getenv("CLUB_API_KEY", "dev-secret-key-change-in-prod")
 
 app = FastAPI(
     title="Club de Mobilité Pierrefontaine",
     description="P2P car-sharing API — transparent pricing, zero commission",
-    version="1.0.0",
+    version="2.0.0",
 )
+
+# CORS
+cors_origins = os.getenv("CORS_ORIGINS", "http://localhost:5173").split(",")
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=cors_origins,
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
+# Sentry (optional — only if DSN is set)
+_sentry_dsn = os.getenv("SENTRY_DSN", "")
+if _sentry_dsn:
+    import sentry_sdk
+    sentry_sdk.init(dsn=_sentry_dsn, traces_sample_rate=0.1)
+
+# Prometheus metrics
+try:
+    from prometheus_fastapi_instrumentator import Instrumentator
+    Instrumentator().instrument(app).expose(app)
+except ImportError:
+    pass
+
+# Mount routers
+app.include_router(auth_router.router)
+app.include_router(users_router.router)
+app.include_router(reviews_router.router)
+app.include_router(bookings_router.router)
 
 
 # ---------------------------------------------------------------------------
@@ -46,7 +80,7 @@ class VehicleCreate(BaseModel):
     consumption_real: float = 0.0
     seats: int = 5
     transmission: str = "manuelle"
-    member_id: str
+    member_id: str = ""
     owner_name: str
     nb_reviews: int = 0
     rating: float = 4.0
@@ -61,6 +95,7 @@ class VehicleCreate(BaseModel):
     min_booking_hours: float = 4.0
     max_booking_days: float = 7.0
     available: bool = True
+    photo_url: str | None = None
 
 
 class VehicleStateUpdate(BaseModel):
@@ -78,8 +113,8 @@ class QuoteRequest(BaseModel):
     include_fuel: bool = False
 
 
-def _vehicle_to_dict(v: Vehicle) -> dict:
-    return {
+def _vehicle_to_dict(v: Vehicle, include_details: bool = False) -> dict:
+    d = {
         "id": v.id,
         "plate": v.plate,
         "make": v.make,
@@ -88,8 +123,8 @@ def _vehicle_to_dict(v: Vehicle) -> dict:
         "category": v.category,
         "fuel_type": v.fuel_type,
         "owner_name": v.owner_name,
-        "nb_reviews": v.nb_reviews,
-        "rating": v.rating,
+        "nb_reviews": len(v.reviews),
+        "rating": round(sum(r.rating_vehicle for r in v.reviews) / len(v.reviews), 2) if v.reviews else v.rating,
         "odometer_km": v.odometer_km,
         "condition": v.condition,
         "comfort": v.comfort,
@@ -100,7 +135,36 @@ def _vehicle_to_dict(v: Vehicle) -> dict:
         "min_booking_hours": v.min_booking_hours,
         "max_booking_days": v.max_booking_days,
         "include_fuel_default": v.include_fuel_default,
+        "photo_url": v.photo_url,
+        "owner_id": v.owner_id,
+        "ct_expiry": v.ct_expiry.isoformat() if v.ct_expiry else None,
+        "insurance_expiry": v.insurance_expiry.isoformat() if v.insurance_expiry else None,
+        "seats": v.seats,
+        "transmission": v.transmission,
     }
+    if include_details:
+        d["maintenance_events"] = [
+            {
+                "id": m.id,
+                "date": m.date.isoformat(),
+                "type": m.type,
+                "km": m.km,
+                "description": m.description,
+            }
+            for m in sorted(v.maintenance_events, key=lambda x: x.date, reverse=True)
+        ]
+        d["reviews"] = [
+            {
+                "id": r.id,
+                "rating_vehicle": r.rating_vehicle,
+                "rating_owner": r.rating_owner,
+                "comment": r.comment,
+                "created_at": r.created_at.isoformat(),
+                "reviewer_name": r.reviewer.name if r.reviewer else None,
+            }
+            for r in sorted(v.reviews, key=lambda x: x.created_at, reverse=True)
+        ]
+    return d
 
 
 # ---------------------------------------------------------------------------
@@ -123,7 +187,7 @@ def get_vehicle(vehicle_id: int, db: Session = Depends(get_db)):
     v = db.query(Vehicle).filter(Vehicle.id == vehicle_id).first()
     if not v:
         raise HTTPException(status_code=404, detail="Vehicle not found")
-    return _vehicle_to_dict(v)
+    return _vehicle_to_dict(v, include_details=True)
 
 
 @app.post("/vehicles", status_code=201, dependencies=[Depends(require_api_key)])
@@ -157,6 +221,7 @@ def create_vehicle(payload: VehicleCreate, db: Session = Depends(get_db)):
         min_booking_hours=payload.min_booking_hours,
         max_booking_days=payload.max_booking_days,
         available=payload.available,
+        photo_url=payload.photo_url,
     )
     db.add(v)
     db.commit()

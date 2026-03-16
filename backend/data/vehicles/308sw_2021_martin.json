@@ -1,6 +1,6 @@
 {
   "registration": {
-    "plate": "EF-456-GH",
+    "plate": "PQ-789-RS",
     "vin": "VF3LCBHXBLS123456",
     "ct_expiry": "2027-03-22",
     "insurance_expiry": "2027-04-30"
@@ -52,5 +52,6 @@
         "reason": "Vacances propriétaire"
       }
     ]
-  }
+  },
+  "photo_url": "https://upload.wikimedia.org/wikipedia/commons/9/9e/2022_-_Peugeot_308_III_%28C%29_-_121.jpg"
 }

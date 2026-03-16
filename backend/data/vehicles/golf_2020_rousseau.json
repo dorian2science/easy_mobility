@@ -1,0 +1,63 @@
+{
+  "registration": {
+    "plate": "IJ-789-KL",
+    "vin": "WVWZZZ1KZ0W123456",
+    "ct_expiry": "2026-08-10",
+    "insurance_expiry": "2027-02-28"
+  },
+  "vehicle_info": {
+    "make": "Volkswagen",
+    "model": "Golf",
+    "year": 2020,
+    "category": "B",
+    "fuel_type": "diesel",
+    "consumption_real": 5.0,
+    "seats": 5,
+    "transmission": "manuelle"
+  },
+  "owner": {
+    "member_id": "MBR-005",
+    "name": "Rousseau",
+    "nb_reviews": 9,
+    "rating": 4.4
+  },
+  "current_state": {
+    "odometer_km": 74200,
+    "condition": "bon",
+    "comfort": "standard",
+    "fuel_level_pct": 60,
+    "known_defects": ["Petite égratignure aile avant droite"],
+    "maintenance_history": [
+      {
+        "date": "2025-10-18",
+        "type": "vidange",
+        "km": 70000,
+        "description": "Vidange + filtre à huile + filtre à air"
+      },
+      {
+        "date": "2024-05-22",
+        "type": "freins",
+        "km": 60000,
+        "description": "Remplacement plaquettes avant"
+      }
+    ]
+  },
+  "pricing_params": {
+    "age_years": 6,
+    "annual_km_owner": 15000,
+    "include_fuel_default": false,
+    "min_booking_hours": 4,
+    "max_booking_days": 5
+  },
+  "availability": {
+    "available": true,
+    "unavailable_periods": [
+      {
+        "from": "2026-04-10",
+        "to": "2026-04-14",
+        "reason": "Contrôle technique"
+      }
+    ]
+  },
+  "photo_url": "https://upload.wikimedia.org/wikipedia/commons/8/8a/2020_Volkswagen_Golf_Style_1.5_Front.jpg"
+}

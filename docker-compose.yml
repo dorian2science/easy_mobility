@@ -3,24 +3,76 @@ services:
     build:
       context: .
       dockerfile: backend/Dockerfile
+    restart: unless-stopped
     ports:
       - "8000:8000"
     environment:
       - DATABASE_URL=sqlite:////app/club_mobilite.db
       - CLUB_API_KEY=${CLUB_API_KEY:-dev-secret-key-change-in-prod}
+      - JWT_SECRET=${JWT_SECRET:-dev-jwt-secret-change-in-prod}
       - ENVIRONMENT=production
       - CORS_ORIGINS=http://localhost
+      - GOOGLE_CLIENT_ID=${GOOGLE_CLIENT_ID:-}
+      - GOOGLE_CLIENT_SECRET=${GOOGLE_CLIENT_SECRET:-}
+      - SENTRY_DSN=${SENTRY_DSN:-}
+      - TWILIO_ACCOUNT_SID=${TWILIO_ACCOUNT_SID:-}
+      - TWILIO_AUTH_TOKEN=${TWILIO_AUTH_TOKEN:-}
+      - TWILIO_WHATSAPP_FROM=${TWILIO_WHATSAPP_FROM:-whatsapp:+14155238886}
     volumes:
-      - db_data:/app/data
+      - db_data:/app
 
   frontend:
     build:
       context: ./frontend
       dockerfile: Dockerfile
+      args:
+        VITE_GOOGLE_CLIENT_ID: ${VITE_GOOGLE_CLIENT_ID:-}
     ports:
       - "80:80"
     depends_on:
       - backend
+
+  # --- Monitoring (start with: docker-compose --profile monitoring up) ---
+
+  prometheus:
+    image: prom/prometheus:v2.51.0
+    profiles: [monitoring]
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./monitoring/prometheus.yml:/etc/prometheus/prometheus.yml
+
+  grafana:
+    image: grafana/grafana:10.4.0
+    profiles: [monitoring]
+    ports:
+      - "3000:3000"
+    environment:
+      - GF_SECURITY_ADMIN_PASSWORD=admin
+    volumes:
+      - ./monitoring/grafana/provisioning:/etc/grafana/provisioning
+    depends_on:
+      - prometheus
+
+  loki:
+    image: grafana/loki:2.9.0
+    profiles: [monitoring]
+    ports:
+      - "3100:3100"
+    volumes:
+      - ./monitoring/loki/loki-config.yaml:/etc/loki/local-config.yaml
+    command: -config.file=/etc/loki/local-config.yaml
+
+  promtail:
+    image: grafana/promtail:2.9.0
+    profiles: [monitoring]
+    volumes:
+      - /var/lib/docker/containers:/var/lib/docker/containers:ro
+      - /var/run/docker.sock:/var/run/docker.sock
+      - ./monitoring/promtail/promtail-config.yaml:/etc/promtail/config.yaml
+    command: -config.file=/etc/promtail/config.yaml
+    depends_on:
+      - loki
 
 volumes:
   db_data:

@@ -49,47 +49,65 @@ Transformer le parc automobile statique de la Résidence Pierrefontaine en un r�
 ```
 club-mobilite-pierrefontaine/
 │
-├── backend/                    # FastAPI — Pricing Engine + API REST
-│   ├── pricing_engine_v2.py    # Moteur de calcul (PRK, coûts fixes, Cartage, marge)
-│   ├── api_v2.py               # Endpoints FastAPI
+├── backend/
+│   ├── pricing_engine.py       # Moteur de calcul (PRK, coûts fixes, Cartage, marge)
+│   ├── api.py                  # Endpoints FastAPI principaux + montage routers
+│   ├── auth.py                 # JWT utilities (HS256, 7 jours)
+│   ├── notifications.py        # WhatsApp via Twilio
+│   ├── routers/
+│   │   ├── auth.py             # /auth/google | /auth/register | /auth/login | /auth/me
+│   │   ├── users.py            # /users/me | /users/me/stats
+│   │   ├── reviews.py          # /vehicles/{id}/reviews
+│   │   └── bookings.py         # /bookings CRUD + extension
 │   ├── models/
-│   │   ├── vehicle.py          # ORM SQLAlchemy — Véhicule
-│   │   ├── owner.py            # ORM SQLAlchemy — Propriétaire
-│   │   └── rental.py           # ORM SQLAlchemy — Location
+│   │   ├── user.py             # User (OAuth + email/password, trust flags)
+│   │   ├── vehicle.py          # Vehicle (+ photo_url, owner_id FK)
+│   │   ├── maintenance_event.py
+│   │   ├── quote.py            # Quote (+ renter_id FK)
+│   │   ├── review.py           # Review (vehicle + owner ratings)
+│   │   └── booking.py          # Booking (+ extension fields)
+│   ├── alembic/versions/
+│   │   ├── 0001_initial.py
+│   │   └── 0002_users_reviews_bookings.py
 │   ├── schemas/
-│   │   └── vehicle_schema.json # JSON Schema de référence (voir T1)
-│   ├── data/
-│   │   └── vehicles/           # Fiches JSON initiales (seed data)
-│   │       ├── clio5_2022_dupont.json
-│   │       ├── 308sw_2021_martin.json
-│   │       └── ...
+│   │   └── vehicle_schema.json
+│   ├── data/vehicles/          # 8 fiches JSON seed (catégories A–E)
 │   ├── tests/
-│   │   ├── test_pricing.py
-│   │   └── test_api.py
-│   ├── alembic/                # Migrations DB
+│   │   ├── test_pricing.py     # 15 tests
+│   │   └── test_api.py         # 12 tests
 │   ├── requirements.txt
 │   └── Dockerfile
 │
-├── frontend/                   # React (Vite) — Interface de devis
-│   ├── src/
-│   │   ├── components/
-│   │   │   ├── VehicleCard.jsx
-│   │   │   ├── QuoteForm.jsx
-│   │   │   └── PriceBreakdown.jsx
-│   │   ├── pages/
-│   │   │   ├── Home.jsx
-│   │   │   └── Quote.jsx
-│   │   └── App.jsx
-│   ├── package.json
-│   └── Dockerfile
+├── frontend/src/
+│   ├── context/AuthContext.jsx # JWT localStorage + login/logout
+│   ├── hooks/useApi.js         # fetch wrapper avec Bearer token
+│   ├── pages/
+│   │   ├── Home.jsx            # Liste véhicules
+│   │   ├── VehicleDetail.jsx   # Photo + état + historique + avis
+│   │   ├── Quote.jsx           # Formulaire devis
+│   │   ├── Login.jsx           # Email/password + Google OAuth
+│   │   ├── Profile.jsx         # Dashboard membre
+│   │   └── AddVehicle.jsx      # Ajout véhicule (auth-guarded)
+│   └── components/
+│       ├── VehicleCard.jsx     # Carte véhicule avec photo
+│       ├── QuoteForm.jsx / PriceBreakdown.jsx
+│       ├── ReviewCard.jsx / ReviewList.jsx / ReviewForm.jsx
+│       ├── BookingHistoryTable.jsx / StatsDashboard.jsx
+│       └── LoginButton.jsx
 │
-├── .github/
-│   └── workflows/
-│       └── ci.yml              # Tests + lint + deploy Railway
+├── scripts/
+│   ├── seed_db.py              # Charge véhicules + crée users propriétaires
+│   └── seed_reviews.py         # 13 avis mock pour démo
 │
-├── docker-compose.yml          # Stack locale complète
+├── monitoring/                 # docker-compose --profile monitoring
+│   ├── prometheus.yml
+│   ├── loki/loki-config.yaml
+│   └── grafana/provisioning/   # Datasources + dashboard auto-provisionné
+│
+├── .github/workflows/ci.yml    # Tests + lint + deploy Railway
+├── docker-compose.yml
 ├── .env.example
-└── README.md                   # Ce fichier
+└── README.md
 ```
 
 ---
@@ -100,13 +118,16 @@ club-mobilite-pierrefontaine/
 |---|---|---|
 | **Backend** | Python 3.12 + FastAPI | Async, Pydantic natif, OpenAPI auto-généré |
 | **Pricing Engine** | Python pur (dataclasses) | Lisible, testable, JSON-serialisable |
+| **Auth** | JWT HS256 + Google OAuth + passlib bcrypt | Double chemin signup, tokens 7 jours |
 | **ORM** | SQLAlchemy 2.x + Alembic | Migrations propres, compatible SQLite & PostgreSQL |
 | **DB locale** | SQLite (dev) | Zéro config, fichier versionnable |
 | **DB prod** | PostgreSQL (Railway) | Robustesse, Railway managed |
 | **Frontend** | React 18 + Vite + TailwindCSS | Rapide à bootstrapper, composants clairs |
-| **Assurance** | Cartage/Omocom API | ~5 €/jour, substitution assurance P2P |
-| **Paiement** | Stripe / Lydia / Revolut | Flux directs entre membres (le club ne touche rien) |
-| **CI/CD** | GitHub Actions | Tests auto + deploy Railway sur push `main` |
+| **Notifications** | Twilio WhatsApp API | Extensions de réservation, alertes proprio |
+| **Assurance** | Cartage/Omocom API | ~5 €/jour, substitution assurance P2P _(Phase 3)_ |
+| **Paiement** | Stripe / Lydia / Revolut | Flux directs entre membres _(Phase 4)_ |
+| **Monitoring** | Sentry + Prometheus + Loki + Grafana | Erreurs temps réel + métriques + logs |
+| **CI/CD** | GitHub Actions | Tests + lint + deploy Railway sur push `main` |
 | **Déploiement** | Railway.app | Free tier suffisant pour POC, PostgreSQL inclus |
 | **Containerisation** | Docker + docker-compose | Reproductibilité locale et prod |
 
@@ -781,31 +802,34 @@ RAILWAY_TOKEN=    # Généré dans le dashboard Railway
 
 ## 8. Roadmap <a name="roadmap"></a>
 
-### Phase 1 — POC Local (Sprint 1 · ~2 semaines)
-- [x] Moteur de pricing v2 (`pricing_engine_v2.py`)
-- [x] API FastAPI de base (`api_v2.py`)
-- [ ] **T1** — Schéma JSON véhicule + 3 fiches seed
-- [ ] **T2** — Intégration JSON → Engine + tests
-- [ ] **T3** — Endpoint `/vehicles` CRUD
-- [ ] **T5** — ORM SQLAlchemy + migrations Alembic
-- [ ] **T4** — Frontend React minimal (liste + devis)
+### ✅ Phase 1 — POC Local (Sprint 0–1) _terminé_
+- [x] Moteur de pricing + 13 tests unitaires
+- [x] API FastAPI de base (CRUD véhicules, devis, référentiels)
+- [x] Schéma JSON véhicule + 3 fiches seed (A, B, D)
+- [x] ORM SQLAlchemy + Alembic migration 0001
+- [x] Frontend React : liste véhicules + devis
+- [x] Docker + docker-compose
 
-### Phase 2 — CI/CD & Production (Sprint 2 · ~1 semaine)
-- [ ] **T6** — Tests complets + pipeline GitHub Actions
-- [ ] **T7** — Déploiement Railway
-- [ ] README finalisé avec URL de prod
+### ✅ Phase 2 — CI/CD & Auth & Réservations (Sprints 2–5) _terminé_
+- [x] GitHub Actions CI/CD + déploiement Railway
+- [x] Auth : Google OAuth + email/password + JWT
+- [x] 5 véhicules seed supplémentaires (catégories A–E avec photos)
+- [x] Système d'avis (backend + composants React)
+- [x] Page détail véhicule (photo, état, historique entretien)
+- [x] Réservations : CRUD complet + machine à états
+- [x] Extension de réservation + notifications WhatsApp (Twilio)
+- [x] Dashboard profil utilisateur (stats, historique)
+- [x] Sentry (erreurs) + Prometheus/Grafana (métriques)
 
-### Phase 3 — Fonctionnalités Club (Sprint 3)
-- [ ] Système de réservation (calendrier partagé)
-- [ ] Intégration Cartage API (assurance en ligne)
-- [ ] Notation des membres (emprunteur ↔ propriétaire)
-- [ ] Gestion des états des lieux (photos avant/après)
-- [ ] Notifications WhatsApp/SMS
+### Phase 3 — Intégration métier _(à venir)_
+- [ ] Intégration Cartage API (souscription assurance en ligne)
+- [ ] États des lieux avec photos (avant/après location)
+- [ ] Calendrier de disponibilité interactif
+- [ ] Tests E2E (Playwright)
 
-### Phase 4 — Scale
-- [ ] Auth membres (JWT + magic link)
+### Phase 4 — Scale _(à venir)_
 - [ ] Paiement Stripe (split automatique proprio / Cartage)
-- [ ] Application mobile (React Native ou PWA)
+- [ ] PWA / mode offline
 - [ ] Extension à d'autres résidences
 
 ---

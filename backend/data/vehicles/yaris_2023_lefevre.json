@@ -1,0 +1,51 @@
+{
+  "registration": {
+    "plate": "EF-456-GH",
+    "vin": "SB1KP3JE50E123456",
+    "ct_expiry": "2027-03-20",
+    "insurance_expiry": "2027-06-30"
+  },
+  "vehicle_info": {
+    "make": "Toyota",
+    "model": "Yaris",
+    "year": 2023,
+    "category": "A",
+    "fuel_type": "essence",
+    "consumption_real": 5.2,
+    "seats": 5,
+    "transmission": "automatique"
+  },
+  "owner": {
+    "member_id": "MBR-004",
+    "name": "Lefèvre",
+    "nb_reviews": 4,
+    "rating": 4.8
+  },
+  "current_state": {
+    "odometer_km": 12400,
+    "condition": "excellent",
+    "comfort": "confort",
+    "fuel_level_pct": 100,
+    "known_defects": [],
+    "maintenance_history": [
+      {
+        "date": "2025-12-05",
+        "type": "révision",
+        "km": 10000,
+        "description": "Révision constructeur 10 000 km"
+      }
+    ]
+  },
+  "pricing_params": {
+    "age_years": 2,
+    "annual_km_owner": 8000,
+    "include_fuel_default": false,
+    "min_booking_hours": 4,
+    "max_booking_days": 7
+  },
+  "availability": {
+    "available": true,
+    "unavailable_periods": []
+  },
+  "photo_url": "https://upload.wikimedia.org/wikipedia/commons/3/3e/2020_Toyota_Yaris_Design_HEV_CVT_1.5_Front.jpg"
+}

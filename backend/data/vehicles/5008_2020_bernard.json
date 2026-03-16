@@ -1,6 +1,6 @@
 {
   "registration": {
-    "plate": "IJ-789-KL",
+    "plate": "TU-012-VW",
     "vin": "VF3MCBHXALS789012",
     "ct_expiry": "2026-08-10",
     "insurance_expiry": "2026-12-31"
@@ -52,5 +52,6 @@
   "availability": {
     "available": true,
     "unavailable_periods": []
-  }
+  },
+  "photo_url": "https://upload.wikimedia.org/wikipedia/commons/e/e3/Peugeot_5008_C_DSC_2949.jpg"
 }

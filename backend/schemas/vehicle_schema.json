@@ -95,6 +95,11 @@
       },
       "additionalProperties": false
     },
+    "photo_url": {
+      "type": "string",
+      "description": "URL of vehicle photo (optional)",
+      "format": "uri"
+    },
     "availability": {
       "type": "object",
       "required": ["available"],
@@ -117,5 +122,5 @@
       "additionalProperties": false
     }
   },
-  "additionalProperties": false
+  "additionalProperties": true
 }

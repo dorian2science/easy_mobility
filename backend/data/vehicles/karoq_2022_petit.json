@@ -1,0 +1,51 @@
+{
+  "registration": {
+    "plate": "MN-012-OP",
+    "vin": "TMBJJ7NU5N0123456",
+    "ct_expiry": "2027-01-25",
+    "insurance_expiry": "2027-05-31"
+  },
+  "vehicle_info": {
+    "make": "Skoda",
+    "model": "Karoq",
+    "year": 2022,
+    "category": "C",
+    "fuel_type": "essence",
+    "consumption_real": 7.1,
+    "seats": 5,
+    "transmission": "automatique"
+  },
+  "owner": {
+    "member_id": "MBR-006",
+    "name": "Petit",
+    "nb_reviews": 3,
+    "rating": 4.2
+  },
+  "current_state": {
+    "odometer_km": 31800,
+    "condition": "bon",
+    "comfort": "confort",
+    "fuel_level_pct": 75,
+    "known_defects": [],
+    "maintenance_history": [
+      {
+        "date": "2025-07-14",
+        "type": "révision",
+        "km": 30000,
+        "description": "Révision 30 000 km constructeur"
+      }
+    ]
+  },
+  "pricing_params": {
+    "age_years": 3,
+    "annual_km_owner": 11000,
+    "include_fuel_default": false,
+    "min_booking_hours": 4,
+    "max_booking_days": 7
+  },
+  "availability": {
+    "available": true,
+    "unavailable_periods": []
+  },
+  "photo_url": "https://upload.wikimedia.org/wikipedia/commons/f/f2/Skoda_Karoq_%E2%80%93_f_18042025.jpg"
+}

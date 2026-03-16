@@ -1,0 +1,63 @@
+{
+  "registration": {
+    "plate": "UV-678-WX",
+    "vin": "VF1FL000562123456",
+    "ct_expiry": "2026-09-30",
+    "insurance_expiry": "2026-12-31"
+  },
+  "vehicle_info": {
+    "make": "Renault",
+    "model": "Trafic",
+    "year": 2019,
+    "category": "E",
+    "fuel_type": "diesel",
+    "consumption_real": 9.2,
+    "seats": 3,
+    "transmission": "manuelle"
+  },
+  "owner": {
+    "member_id": "MBR-008",
+    "name": "Lambert",
+    "nb_reviews": 11,
+    "rating": 4.3
+  },
+  "current_state": {
+    "odometer_km": 112000,
+    "condition": "correct",
+    "comfort": "basique",
+    "fuel_level_pct": 50,
+    "known_defects": ["Clim non fonctionnelle"],
+    "maintenance_history": [
+      {
+        "date": "2026-01-10",
+        "type": "vidange",
+        "km": 110000,
+        "description": "Vidange + courroie de distribution"
+      },
+      {
+        "date": "2025-06-05",
+        "type": "freins",
+        "km": 105000,
+        "description": "Disques et plaquettes avant"
+      },
+      {
+        "date": "2024-08-20",
+        "type": "pneus",
+        "km": 95000,
+        "description": "4 pneus neufs"
+      }
+    ]
+  },
+  "pricing_params": {
+    "age_years": 7,
+    "annual_km_owner": 18000,
+    "include_fuel_default": false,
+    "min_booking_hours": 4,
+    "max_booking_days": 3
+  },
+  "availability": {
+    "available": true,
+    "unavailable_periods": []
+  },
+  "photo_url": "https://upload.wikimedia.org/wikipedia/commons/6/68/2024_Renault_Trafic_LWB_Premium_front.jpg"
+}
