@@ -29,6 +29,8 @@ services:
         VITE_GOOGLE_CLIENT_ID: ${VITE_GOOGLE_CLIENT_ID:-}
     ports:
       - "80:80"
+    environment:
+      - BACKEND_URL=http://backend:8000
     depends_on:
       - backend
 
