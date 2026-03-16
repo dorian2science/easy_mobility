@@ -1,9 +1,9 @@
 FROM node:20-alpine AS builder
 
 WORKDIR /app
-COPY frontend/package*.json ./
+COPY package*.json ./
 RUN npm ci
-COPY frontend/ .
+COPY . .
 
 # Receive the build arg and expose it as an env var so Vite picks it up
 ARG VITE_GOOGLE_CLIENT_ID
